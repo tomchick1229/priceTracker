@@ -1,0 +1,114 @@
+# Sample product configuration
+# Supports both minimal and normalized formats
+
+# Minimal format (user's style):
+product:
+  Curved Monitor - LG 34WP65C-B:
+    link:
+      - https://www.amazon.ca/LG-UltraWide-34WP65C-B-34-21/dp/B093TB6HZH
+    currency: CAD
+    thresholds:
+      min_abs: 40
+      min_pct: 0.10
+
+  Quest 3:
+    link:
+      - https://www.bestbuy.ca/en-ca/product/meta-quest-3-512gb-vr-headset/17246836
+      - https://www.amazon.ca/Meta-Quest-512GB-Breakthrough-Performance/dp/B0CD1JTBSC
+    currency: CAD
+    thresholds:
+      min_abs: 50
+      min_pct: 0.10
+
+  Moza shifter:
+    link:
+      - https://www.canadacomputers.com/en/racing-simulator-shifters-hand-brakes/242951/moza-hgp-shifter-rs039.html
+      - https://www.advancedsimracing.com/products/moza-hgp-shifter
+    currency: CAD
+    thresholds:
+      min_abs: 25
+      min_pct: 0.10
+
+  Moza wheel:
+    link:
+      - https://www.canadacomputers.com/en/racing-simulator-wheels/234137/moza-rs-v2-steering-wheel-leather-version-rs025.html?srsltid=AfmBOorPjlwFpQu-q3idS5hRnhe-kNQkjsS7Bl4yoERJxrugof3r-7lAK5I
+      - https://mozaracing.com/products/rs-v2-wheel
+      - https://www.amazon.ca/MOZA-RACING-Summer-Breathable-Lenkradabdeckung/dp/B07DVWNMK7?source=ps-sl-shoppingads-lpcontext&ref_=fplfs&psc=1&smid=AECIPMEQNVKO2
+    currency: CAD
+    thresholds:
+      min_abs: 40
+      min_pct: 0.10
+
+  Moza pedal:
+    link:
+      - https://www.advancedsimracing.com/products/moza-racing-srp-pedals?_pos=1&_sid=33e5235b1&_ss=r
+      - https://www.canadacomputers.com/en/racing-simulator-pedals/234140/moza-sr-p-double-pedals-with-base-rs11.html
+    currency: CAD
+    thresholds:
+      min_abs: 30
+      min_pct: 0.10
+
+  Revel exhaust:
+    link:
+      - https://subiesupplyco.ca/products/revel-medallion-touring-s-catback-exhaust-dual-muffler-2022-subaru-wrx
+    currency: CAD
+    thresholds:
+      min_abs: 20
+      min_pct: 0.10
+
+  K&N Intake for GR Corolla:
+    link:
+      - https://www.knfilters.com/cold-air-intakes/toyota/gr-corolla
+      - https://t1motorsports.ca/products/k-n-2023-toyota-gr-corolla-l3-1-6l-typhoon-performance-air-intake-system
+    currency: CAD
+    thresholds:
+      min_abs: 50
+      min_pct: 0.10
+
+  SXTH Element Intake for GR Corolla:
+    link:
+      - https://sxthelement.com/en-ca/products/gr-corolla-cplt-intake
+      - https://www.amtuning.ca/products/gr-corolla-cplt-intake
+    currency: CAD
+    thresholds:
+      min_abs: 75
+      min_pct: 0.10
+
+  MST Performance Intake for GR Corolla:
+    link:
+      - https://wctperformance.ca/mst-performance-cold-air-intake-2023-toyota-gr-corolla-1-6l-ty-grc05/
+      - https://www.mst-performance.com/products/ty-grc05b
+    currency: CAD
+    thresholds:
+      min_abs: 75
+      min_pct: 0.10
+
+  Beat-Sonic ENA-2T3 Amp:
+    link:
+      - https://www.beatsonicusa.com/products/ena-2t3
+      - https://autocentrix.ca/products/2018-toyota-models-alpha-power-amplifier-kit?variant=42739605405835
+    currency: CAD
+    thresholds:
+      min_abs: 30
+      min_pct: 0.10
+
+  
+
+# Normalized format (alternative):
+# products:
+#   - id: HF8
+#     currency: CAD
+#     links:
+#       - https://www.canadacomputers.com/product_info.php?cPath=43_557_559&item_id=123456
+#       - https://www.amazon.ca/dp/B07SOMETHING
+#     thresholds:
+#       min_abs: 25
+#       min_pct: 0.10
+#   
+#   - id: GPU1
+#     currency: CAD
+#     links:
+#       - https://www.canadacomputers.com/product_info.php?cPath=43_557_558&item_id=234567
+#     thresholds:
+#       min_abs: 20
+#       min_pct: 0.08

@@ -1,0 +1,15 @@
+[project]
+name = "pricetracker"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "extruct>=0.18.0",
+    "httpx>=0.28.1",
+    "lxml>=6.0.1",
+    "pydantic>=2.11.9",
+    "python-dotenv>=1.1.1",
+    "pyyaml>=6.0.2",
+    "w3lib>=2.3.1",
+]
