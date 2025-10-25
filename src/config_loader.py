@@ -66,7 +66,8 @@ def _normalize_minimal_format(product_data: Dict[str, Any]) -> List[ProductSpec]
             id=product_id,
             links=links,
             currency=config.get('currency'),
-            thresholds=thresholds
+            thresholds=thresholds,
+            owner=config.get('owner')
         ))
     
     return products

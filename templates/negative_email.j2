@@ -1,0 +1,26 @@
+# Subject: 無野要買。。。
+
+無野買。點解？
+
+總結：
+{% for item in summary %}
+{{ item.product_id }}
+{% if item.snapshots %}
+{% for snapshot in item.snapshots %}
+    - {{ snapshot.retailer_id }}: ${{ snapshot.price }} {{ snapshot.currency }}
+    - Link: {{ snapshot.url }}{% endfor %}{% else %}
+No current prices available{% endif %}
+{%- if item.best_price is not none %}
+Best price: ${{ item.best_price }}{% endif %}
+{%- if item.previous_price is not none %}
+Previous price: ${{ item.previous_price }}{% endif %}
+{%- if item.price_drop is not none %}
+Price drop: ${{ item.price_drop }}{% endif %}
+{%- if item.savings is not none %}
+Total savings: ${{ item.savings }} ({{ item.savings_pct }}% off){% endif %}
+{%- if item.best_url %}
+Best deal at: {{ item.best_url }}{% endif %}
+-----------------------
+{% endfor %}
+
+Datetime: {{datetime}}

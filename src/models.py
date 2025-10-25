@@ -11,6 +11,7 @@ class ProductSpec(BaseModel):
     id: str
     links: List[str]
     currency: Optional[str] = None
+    owner: Optional[str] = None
     thresholds: Optional[dict] = Field(default_factory=lambda: {"min_abs": 20, "min_pct": 0.08})
 
 

@@ -6,6 +6,9 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from typing import List, Optional
 from dotenv import load_dotenv
+from jinja2 import Environment, FileSystemLoader
+from datetime import datetime
+import ast
 
 # Load environment variables
 load_dotenv()
@@ -22,6 +25,8 @@ class EmailAgent:
         password = os.getenv('EMAIL_PASSWORD')
         self.from_name = os.getenv('EMAIL_FROM_NAME', 'Price Tracker')
         self.use_tls = os.getenv('EMAIL_USE_TLS', 'true').lower() == 'true'
+        self.admin_email_list = os.getenv('ADMIN_EMAIL_LIST', None)
+        self.email_list = os.getenv('EMAIL_LIST', None)
         
         if not username or not password:
             raise ValueError("EMAIL_USERNAME and EMAIL_PASSWORD must be set in .env file")
@@ -29,7 +34,63 @@ class EmailAgent:
         # Store as guaranteed strings
         self.username = username
         self.password = password
+
+    def filter_positive(self, summary: dict) -> dict:
+        """Filter summary to only include positive price drops."""
+        positive_summary = []
+        for item in summary:
+            if item.get("savings") and item["savings"] > 0:
+                positive_summary.append(item)
+        return positive_summary
     
+    def send_template_email(self, type: str, recipients: str, summary: dict) -> None:
+        current_datetime = datetime.now().astimezone().strftime("%Y-%m-%d %H:%M:%S")
+        
+        env = Environment(loader=FileSystemLoader("templates"))
+        if type == "summary":
+            template = env.get_template("summary.j2")
+        elif type == "positive":
+            template = env.get_template("positive_email.j2")
+            summary = self.filter_positive(summary)
+        elif type == "negative":
+            template = env.get_template("negative_email.j2")
+        else:
+            print(f"[EMAIL ERROR] Invalid email type: {type}")
+            return
+        print(f"{summary = }")
+        owners = ""
+        for item in summary:
+            print(f"{item = }")
+            if item.get("owner"):
+                owners += ", " + item.get("owner")
+        owners = owners.lstrip(", ")
+        rendered = template.render(datetime=current_datetime, summary=summary, owners=owners)
+        lines = rendered.strip().splitlines()
+        title = lines[0].replace("# Subject:", "").strip()
+        body = "\n".join(lines[1:]).strip()
+
+        # Convert recipients string to actual email list
+        email_list = []
+        if recipients == "general" and self.email_list:
+            email_list = ast.literal_eval(self.email_list)
+        elif recipients == "admin" and self.admin_email_list:
+            email_list = ast.literal_eval(self.admin_email_list)
+        else:
+            print(f"[EMAIL ERROR] Invalid recipients type or empty email list: {recipients}")
+            return
+
+        try: 
+            self.send_email(
+                recipients=email_list,
+                content=body,
+                title=title
+            )
+            return True
+        except Exception as e:
+            print(f"[EMAIL ERROR] Failed to send summary email: {e}")
+            return False
+            
+            
     def send_email(self, 
                    recipients: List[str], 
                    content: str, 

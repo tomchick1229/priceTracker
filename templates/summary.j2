@@ -1,0 +1,23 @@
+# Subject: Summary of Kenborough Tracker
+
+Hi,
+
+Kenborough Tracker Summary 
+Datetime: {{datetime}}
+
+Here's the summary for each item:
+{% for item in summary %}
+{{ item.product_id }}
+{% if item.snapshots %}
+Current prices:
+{% for snapshot in item.snapshots %}
+  - {{ snapshot.retailer_id }}: ${{ snapshot.price }} {{ snapshot.currency }}
+    {{ snapshot.url }}{% endfor %}{% else %}
+No current prices available{% endif %}
+{%- if item.best_price is not none %} | Best price: ${{ item.best_price }}{% endif %}
+{%- if item.previous_price is not none %} | Previous price: ${{ item.previous_price }}{% endif %}
+{%- if item.price_drop is not none %} | Price drop: ${{ item.price_drop }}{% endif %}
+{%- if item.savings is not none %} | Total savings: ${{ item.savings }} ({{ item.savings_pct }}% off){% endif %}
+{%- if item.best_url %} | Best deal at: {{ item.best_url }}{% endif %}
+
+{% endfor %}

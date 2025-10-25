@@ -3,13 +3,7 @@
 from typing import Optional, List
 from src.models import OfferSnapshot, PriceEvent
 from src.storage import Storage
-
-try:
-    from src.email_agent import EmailAgent
-    EMAIL_AVAILABLE = True
-except ImportError:
-    EMAIL_AVAILABLE = False
-
+from src.email_agent import EmailAgent
 
 class PriceEngine:
     """Engine for detecting price drops and managing alerts."""
@@ -18,15 +12,16 @@ class PriceEngine:
         self.storage = storage
         self.email_recipients = email_recipients or []
         self.email_agent = None
+        self.email_agent = EmailAgent()
         
-        # Initialize email agent if recipients are provided and email is available
-        if self.email_recipients and EMAIL_AVAILABLE:
-            try:
-                self.email_agent = EmailAgent()
-                print(f"[EMAIL] Initialized email notifications for {len(self.email_recipients)} recipients")
-            except Exception as e:
-                print(f"[EMAIL] Failed to initialize email agent: {e}")
-                self.email_agent = None
+        # # Initialize email agent if recipients are provided and email is available
+        # if self.email_recipients and EMAIL_AVAILABLE:
+        #     try:
+        #         self.email_agent = EmailAgent()
+        #         print(f"[EMAIL] Initialized email notifications for {len(self.email_recipients)} recipients")
+        #     except Exception as e:
+        #         print(f"[EMAIL] Failed to initialize email agent: {e}")
+        #         self.email_agent = None
     
     def detect_drop(self, snapshot: OfferSnapshot, min_abs: float, min_pct: float) -> Optional[PriceEvent]:
         """Detect if there's a price drop compared to last price.
