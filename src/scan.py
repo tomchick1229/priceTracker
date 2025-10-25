@@ -43,7 +43,7 @@ def scan_product(product_spec: ProductSpec, storage: Storage, engine: PriceEngin
     Returns:
         Dictionary summarizing the scanned product
     """
-    print(f"{product_spec = }")
+    # print(f"{product_spec = }")
     summary = {
         "product_id": product_spec.id,
         "urls": product_spec.links,
@@ -187,7 +187,7 @@ def determine_email_recipients(args: argparse.Namespace) -> List[str]:
         if args.recipients:
             email_recipients = args.recipients
         else:
-            email_env = os.getenv('EMAIL_RECIPIENTS')
+            email_env = os.getenv('ADMIN_EMAIL_LIST') if args.test else os.getenv('EMAIL_RECIPIENTS')
             if email_env:
                 email_recipients = [email.strip() for email in email_env.split(',')]
             else:
@@ -293,7 +293,7 @@ def main():
     email_recipients = determine_email_recipients(args)
     engine = initialize_price_engine(storage, email_recipients, args)
 
-    recipients = "general" if not args.test else "admin"
+    email_recipients = "general" if not args.test else "admin"
 
     # Scan all products
     print("\n🚀 Starting price scan...")
@@ -344,17 +344,15 @@ def main():
         if total_drops > 0:
             engine.email_agent.send_template_email(
                 type="positive",
-                recipients=recipients,
+                recipients=email_recipients,
                 summary=product_summaries,
             )
-            print(f"📧 Sent price drop alert emails to {recipients}!")
         else:
             engine.email_agent.send_template_email(
                 type="negative",
-                recipients=recipients,
+                recipients=email_recipients,
                 summary=product_summaries,
             )
-            print(f"📧 Sent negative emails to {recipients}!")
     else:
         print("📧 Email notifications are disabled")
 

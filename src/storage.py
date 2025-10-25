@@ -101,8 +101,8 @@ class Storage:
             cursor = conn.execute("""
                 SELECT price FROM snapshots 
                 WHERE product_id = ? 
-                ORDER BY ts DESC 
-                LIMIT 1 OFFSET 1
+                ORDER BY price  
+                LIMIT 1 
             """, (product_id,))
             row = cursor.fetchone()
             return row[0] if row else None

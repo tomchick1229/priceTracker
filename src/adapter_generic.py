@@ -19,6 +19,9 @@ def create_snapshot(url: str, product_spec: ProductSpec) -> OfferSnapshot:
     
     # Use detected currency or fall back to product's preferred currency
     currency = price_data.get('currency') or product_spec.currency or 'CAD'
+    if currency == "USD":
+        currency = "CAD"  # Force to CAD for generic adapter
+        price_data['price'] = price_data['price'] * 1.4
     
     # Create snapshot
     snapshot = OfferSnapshot(
