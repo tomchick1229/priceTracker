@@ -61,10 +61,10 @@ def scan_product(product_spec: ProductSpec, storage: Storage, engine: PriceEngin
     print(f"   URLs: {len(product_spec.links)}")
     
     snapshots = []
-    valid_prices = []
     snapshot_snippets = []
+    best_deal = None  # Track the best price drop found
     
-    # First, collect all prices from all URLs
+    # Check each URL individually
     for url in product_spec.links:
         try:
             print(f"   🔍 Checking: {url}")
@@ -79,11 +79,30 @@ def scan_product(product_spec: ProductSpec, storage: Storage, engine: PriceEngin
                 "currency": snapshot.currency,
                 "retailer_id": snapshot.retailer_id
             }
-                
-            # Store snapshot for later processing
+            
+            # Store snapshot for historical tracking
+            storage.save_snapshot(snapshot)
             snapshots.append(snapshot)
-            valid_prices.append(snapshot.price)
             snapshot_snippets.append(snapshot_snippet)
+
+            # Get the last price for this specific URL
+            last_price = storage.get_top_price(product_spec.id, snapshot.retailer_id)
+            
+            if last_price is not None:
+                abs_drop = last_price - snapshot.price
+                pct_drop = abs_drop / last_price if last_price > 0 else 0
+                
+                print(f"      📊 Previous price for this URL: ${last_price:.2f}")
+                print(f"      📊 Current price: ${snapshot.price:.2f}")
+                
+                # Update best deal if this is better than what we've seen
+                if best_deal is None or (abs_drop > best_deal['abs_drop'] and pct_drop > best_deal['pct_drop']):
+                    best_deal = {
+                        'snapshot': snapshot,
+                        'last_price': last_price,
+                        'abs_drop': abs_drop,
+                        'pct_drop': pct_drop
+                    }
 
         except Exception as e:
             print(f"      ❌ Error scanning {url}: {e}")
@@ -94,25 +113,30 @@ def scan_product(product_spec: ProductSpec, storage: Storage, engine: PriceEngin
         return summary
 
     summary["snapshots"] = snapshot_snippets
-
-    # Find the lowest price among all URLs
-    lowest_price = min(valid_prices)
-    lowest_snapshot = next(snapshot for snapshot in snapshots if snapshot.price == lowest_price)
-
-    print(f"   💰 Best price: ${lowest_price:.2f} {lowest_snapshot.currency} from {lowest_snapshot.retailer_id}")
     
-    # Save all snapshots to database for historical tracking
-    for snapshot in snapshots:
-        storage.save_snapshot(snapshot)
+    # If we found no price drops, return early
+    if not best_deal:
+        print(f"   📝 No previous prices to compare against")
+        return summary
+
+    # Now we know we have a valid best_deal
+    lowest_snapshot = best_deal['snapshot']
+    last_price = best_deal['last_price']
+    lowest_price = lowest_snapshot.price
+    
+    print(f"   💰 Best price drop found at {lowest_snapshot.retailer_id}")
+    print(f"      Previous: ${last_price:.2f}")
+    print(f"      Current:  ${lowest_price:.2f}")
     
     # Get thresholds
-    thresholds = product_spec.thresholds or {"min_abs": 20, "min_pct": 0.08}
+    thresholds = product_spec.thresholds or {"min_abs": 20, "min_pct": 0.15}
     min_abs = thresholds.get("min_abs", 20)
-    min_pct = thresholds.get("min_pct", 0.08)
-    
-    # Check for price drop using the lowest price snapshot
-    last_price = storage.get_last_price(product_spec.id)
-    
+    min_pct = thresholds.get("min_pct", 0.15)
+
+    abs_drop = last_price - lowest_price
+    pct_drop = abs_drop / last_price if last_price > 0 else 0
+
+
     if last_price is not None:
         abs_drop = last_price - lowest_price
         pct_drop = abs_drop / last_price if last_price > 0 else 0
@@ -125,11 +149,11 @@ def scan_product(product_spec: ProductSpec, storage: Storage, engine: PriceEngin
             if not storage.check_recent_alert(product_spec.id, lowest_price):
                 summary.update({
                     "best_url": lowest_snapshot.url,
-                    "previous_price": last_price,
-                    "best_price": lowest_price,
-                    "price_drop": abs_drop,
-                    "savings": abs_drop,
-                    "savings_pct": pct_drop * 100
+                    "previous_price": round(last_price, 2),
+                    "best_price": round(lowest_price, 2),
+                    "price_drop": round(abs_drop, 2),
+                    "savings": round(abs_drop, 2),
+                    "savings_pct": round(pct_drop * 100, 2)
                 })
                 
                 print(f"   🔥 PRICE DROP DETECTED!")
@@ -303,6 +327,7 @@ def main():
     for i, product in enumerate(products, 1):
         print(f"\n[{i}/{len(products)}] ", end="")
         try:
+            if args.test and i==3: break # DEBUG
             summary = scan_product(product, storage, engine, args.email)
             product_summaries.append(summary)
 

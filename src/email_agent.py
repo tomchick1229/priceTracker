@@ -10,6 +10,7 @@ from jinja2 import Environment, FileSystemLoader
 from datetime import datetime
 import ast
 
+from src.content_writer import ContentWriter
 # Load environment variables
 load_dotenv()
 
@@ -27,7 +28,12 @@ class EmailAgent:
         self.use_tls = os.getenv('EMAIL_USE_TLS', 'true').lower() == 'true'
         self.admin_email_list = os.getenv('ADMIN_EMAIL_LIST', None)
         self.email_list = os.getenv('EMAIL_RECIPIENTS', None)
-        
+        try:
+            self.email_agent_writer = ContentWriter()
+        except Exception as e:
+            self.email_agent_writer = None
+            print("❌ Error occurred while initializing ContentWriter:", e)
+
         if not username or not password:
             raise ValueError("EMAIL_USERNAME and EMAIL_PASSWORD must be set in .env file")
         
@@ -41,6 +47,7 @@ class EmailAgent:
         for item in summary:
             if item.get("savings") and item["savings"] > 0:
                 positive_summary.append(item)
+        print(f"[EMAIL] Filtered positive summary: {positive_summary}")
         return positive_summary
     
     def send_template_email(self, type: str, recipients: str, summary: dict) -> None:
@@ -58,14 +65,28 @@ class EmailAgent:
             print(f"[EMAIL ERROR] Invalid email type: {type}")
             return
         # print(f"{summary = }")
+        opening = self.email_agent_writer.write_opening(type=type, summary=summary) 
         owners = ""
         for item in summary:
             if item.get("owner"):
                 owners += ", " + item.get("owner")
         owners = owners.lstrip(", ").upper()
-        rendered = template.render(datetime=current_datetime, summary=summary, owners=owners)
+        owners = ", ".join(dict.fromkeys(x.strip() for x in owners.split(",")))
+        rendered = template.render(datetime=current_datetime, summary=summary, opening=opening)
         lines = rendered.strip().splitlines()
-        title = lines[0].replace("# Subject:", "").strip()
+        
+        if self.email_agent_writer and type!="summary":
+            title = self.email_agent_writer.write_title(type=type, summary=summary)
+        else:
+            title = lines[0].replace("# Subject:", "").strip()
+            
+        if title == "": #  Fallback title
+            if type == "summary":
+                title = "Price Tracker Summary"
+            elif type == "positive":
+                title = "Price Drop Alert!"
+            elif type == "negative":
+                title = "Price Increase Notification"
         body = "\n".join(lines[1:]).strip()
 
         # Convert recipients string to actual email list

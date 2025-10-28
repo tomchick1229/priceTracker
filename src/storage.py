@@ -95,15 +95,16 @@ class Storage:
             ))
             return cursor.lastrowid or 0
     
-    def get_last_price(self, product_id: str) -> Optional[float]:
-        """Get the most recent price for a product (excluding current run)."""
+    def get_top_price(self, product_id: str, retailer_id: str) -> Optional[float]:
+        """Get the average price for a product (excluding current run)."""
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.execute("""
-                SELECT price FROM snapshots 
-                WHERE product_id = ? 
-                ORDER BY price  
-                LIMIT 1 
-            """, (product_id,))
+                SELECT MAX(price) AS max_price
+                FROM snapshots 
+                WHERE product_id = ? AND retailer_id = ?
+                GROUP BY product_id, retailer_id
+                LIMIT 1
+            """, (product_id, retailer_id))
             row = cursor.fetchone()
             return row[0] if row else None
     
@@ -182,3 +183,9 @@ class Storage:
                     'current_price': current_price
                 })
             return products
+
+if __name__ == "__main__":
+    storage = Storage()
+    print("Database initialized at:", storage.db_path) 
+    cursor = storage.get_last_price("Quest 3")
+    print("Last price for Quest 3:", cursor)

@@ -1,11 +1,11 @@
 # Subject: {{ owners }} 有野要買啦！！！
 
-係時候買野。
+{{ opening }}
 
 {% for item in summary %}
 {{ item.owner }} 要買野啦。
 {{ item.product_id}}
-由 {{ item.previous_price }} 減到 {{ item.best_price}}
+由 {{ item.previous_price }} 減到 {{ item.best_price }}
 Link: {{ item.best_url}}
 仲唔買？！
 
